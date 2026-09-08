@@ -81,7 +81,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
-                            <span>Sync Compass Reading</span>
+                            <span>Sync TRx Heading</span>
                         </button>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
             </div>
         </section>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
             <!-- Canvas Visualizer Display -->
             <div class="lg:col-span-7 flex flex-col items-center justify-center">
@@ -108,22 +108,18 @@
                 </div>
 
                 <!-- Dynamic Telemetry Readout -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-[500px] mt-4">
+                <div class="grid grid-cols-3 gap-3 w-full max-w-[500px] mt-4">
                     <div class="glass-panel p-3 rounded-xl text-center">
-                        <span class="text-xs text-slate-400 font-medium block">Compass Reading</span>
-                        <span id="readoutCompass" class="text-lg font-bold text-cyan-300">315.0°</span>
+                        <span class="text-xs text-slate-400 font-medium block">TRx Heading</span>
+                        <span id="readoutTrx" class="text-lg font-bold text-cyan-300">315.0°</span>
                     </div>
                     <div class="glass-panel p-3 rounded-xl text-center">
                         <span class="text-xs text-slate-400 font-medium block">Northinfo (computed)</span>
                         <span id="readoutNorth" class="text-lg font-bold text-sky-400">45.0°</span>
                     </div>
                     <div class="glass-panel p-3 rounded-xl text-center">
-                        <span class="text-xs text-slate-400 font-medium block">AoA Angle</span>
-                        <span id="readoutAoA" class="text-lg font-bold text-emerald-400">120.0°</span>
-                    </div>
-                    <div class="glass-panel p-3 rounded-xl text-center">
-                        <span class="text-xs text-slate-400 font-medium block">Rel. Bearing</span>
-                        <span id="readoutRel" class="text-lg font-bold text-amber-400">75.0°</span>
+                        <span class="text-xs text-slate-400 font-medium block">Signals Monitored</span>
+                        <span id="readoutSignalCount" class="text-lg font-bold text-amber-400">1</span>
                     </div>
                 </div>
             </div>
@@ -131,72 +127,46 @@
             <!-- Controls Side Panel -->
             <div class="lg:col-span-5 flex flex-col gap-6">
 
-                <!-- Input Form Panel -->
-                <div class="glass-panel p-6 rounded-3xl shadow-xl space-y-6">
+                <!-- TRx Heading Panel -->
+                <div class="glass-panel p-6 rounded-3xl shadow-xl space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
-                        <h2 class="text-xl font-semibold">Controls</h2>
+                        <h2 class="text-xl font-semibold">TRx Heading</h2>
                         <button id="resetBtn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 py-1 px-3 rounded-lg border border-slate-700 transition">
                             Reset Defaults
                         </button>
                     </div>
 
-                    <!-- Compass Reading Input Group -->
                     <div class="space-y-2">
                         <div class="flex justify-between items-center">
-                            <label for="CompassReading" class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                            <label for="TrxHeading" class="text-sm font-semibold text-slate-200 flex items-center gap-2">
                                 <span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span>
-                                Compass Reading (°)
+                                TRx Heading (°)
                             </label>
-                            <span class="text-xs text-slate-400">Notch Heading</span>
+                            <span class="text-xs text-slate-400">Current Notch Heading</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <input type="number" id="CompassReading" min="0" max="360" step="0.1" value="315"
+                            <input type="number" id="TrxHeading" min="0" max="360" step="0.1" value="315"
                                 class="w-28 bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-right font-mono text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
-                            <input type="range" id="CompassReadingSlider" min="0" max="360" step="0.5" value="315"
+                            <input type="range" id="TrxHeadingSlider" min="0" max="360" step="0.5" value="315"
                                 class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
                         </div>
-                        <p class="text-xs text-slate-400">Heading the fixed notch is currently pointing to (0° = notch points true North). Northinfo, the ring/needle rotation, is computed as 360° − Compass Reading.</p>
+                        <p class="text-xs text-slate-400">Compass heading the transceiver's notch is pointing to right now (0° = notch points true North). Northinfo (ring/needle rotation) is computed as 360° − TRx Heading. Changing this re-projects every monitored signal below to keep its true bearing fixed.</p>
                     </div>
+                </div>
 
-                    <!-- AoA Input Group -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <label for="AoA" class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                                <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span>
-                                AoA Angle (°)
-                            </label>
-                            <span class="text-xs text-slate-400">Angle of Arrival</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <input type="number" id="AoA" min="0" max="360" step="0.1" value="120"
-                                class="w-28 bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-right font-mono text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
-                            <input type="range" id="AoASlider" min="0" max="360" step="0.5" value="120"
-                                class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                        </div>
-                        <p class="text-xs text-slate-400">Sets bearing arrow angle measured clockwise from the top notch.</p>
+                <!-- Signals Being Monitored Panel -->
+                <div class="glass-panel p-6 rounded-3xl shadow-xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
+                        <h2 class="text-xl font-semibold">Signals Being Monitored</h2>
+                        <button id="addSignalBtn" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-1.5 px-3 rounded-lg transition">
+                            + Add Signal
+                        </button>
                     </div>
+                    <p class="text-xs text-slate-400 -mt-2">Each signal records the TRx Heading and AoA at the moment it was captured. Labels (M1, M2, ...) are assigned automatically and are never reused, even if a signal is removed. Compass at capture defaults to <strong>N/A</strong>, which links that signal to the live TRx Heading (its AoA always reads relative to the current notch). Type a fixed heading instead to snapshot that signal to a specific past orientation.</p>
 
-                    <!-- Compass Reading 45-Degree Presets Table -->
-                    <div class="pt-2 border-t border-slate-700/60">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Compass Reading Presets (45° Steps)</span>
-                        </div>
-                        <div class="overflow-x-auto rounded-xl border border-slate-700/80 bg-slate-900/50 max-h-48 scrollbar-thin">
-                            <table class="w-full text-left text-xs text-slate-300">
-                                <thead class="bg-slate-800/80 text-slate-400 uppercase font-semibold text-[10px] tracking-wider border-b border-slate-700/80 sticky top-0 backdrop-blur-md">
-                                    <tr>
-                                        <th class="px-3 py-2">Heading</th>
-                                        <th class="px-3 py-2">Direction</th>
-                                        <th class="px-3 py-2 text-right">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="northPresetsTable" class="divide-y divide-slate-800">
-                                    <!-- Generated by JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
+                    <div id="signalsList" class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                        <!-- Generated by JavaScript -->
                     </div>
-
                 </div>
 
                 <!-- Legend and Info -->
@@ -209,7 +179,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 border-2 border-amber-400 bg-amber-400/20 rounded-sm"></div>
-                        <span><strong>Fixed Notch (Top):</strong> Fixed 12 o'clock reference marker (0° reference) pointing UPWARDS. This is where the Compass Reading is measured from.</span>
+                        <span><strong>Fixed Notch (Top):</strong> Fixed 12 o'clock reference marker (0° reference) pointing UPWARDS. TRx Heading and each signal's captured AoA are measured from here.</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 bg-red-500 rounded-sm"></div>
@@ -221,7 +191,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 bg-emerald-400 rounded-sm"></div>
-                        <span><strong>Emerald Line & Arrow:</strong> Angle of Arrival (AoA) bearing line.</span>
+                        <span><strong>Colored Arrows:</strong> One per monitored signal, labeled (M1, M2, ...) at the tip. Each arrow re-projects to keep pointing at the same true bearing as TRx Heading changes.</span>
                     </div>
                 </div>
 
@@ -240,18 +210,16 @@
             const ctx = canvas ? canvas.getContext('2d') : null;
 
             // Input Elements
-            const compassInput = document.getElementById('CompassReading');
-            const compassSlider = document.getElementById('CompassReadingSlider');
-            const aoaInput = document.getElementById('AoA');
-            const aoaSlider = document.getElementById('AoASlider');
+            const trxInput = document.getElementById('TrxHeading');
+            const trxSlider = document.getElementById('TrxHeadingSlider');
+            const addSignalBtn = document.getElementById('addSignalBtn');
+            const signalsListEl = document.getElementById('signalsList');
 
             // Readout Elements
-            const readoutCompass = document.getElementById('readoutCompass');
+            const readoutTrx = document.getElementById('readoutTrx');
             const readoutNorth = document.getElementById('readoutNorth');
-            const readoutAoA = document.getElementById('readoutAoA');
-            const readoutRel = document.getElementById('readoutRel');
+            const readoutSignalCount = document.getElementById('readoutSignalCount');
             const resetBtn = document.getElementById('resetBtn');
-            const presetsTableBody = document.getElementById('northPresetsTable');
 
             // Phone Compass Live Sensor Elements
             const enableSensorBtn = document.getElementById('enableSensorBtn');
@@ -272,6 +240,19 @@
             let sensorHeadingVal = null;
             let isSyncActive = false;
             let sensorConnected = false;
+
+            // Monitored signals state: { label, compass, aoa }
+            // labelCounter always increases -- labels are never reused, even after a delete.
+            let labelCounter = 1;
+            let signals = [];
+
+            const COLOR_PALETTE = ['#34d399', '#f472b6', '#facc15', '#60a5fa', '#c084fc', '#fb923c', '#4ade80', '#22d3ee'];
+
+            function getSignalColor(label) {
+                const idx = parseInt(label.slice(1), 10) - 1;
+                const i = ((idx % COLOR_PALETTE.length) + COLOR_PALETTE.length) % COLOR_PALETTE.length;
+                return COLOR_PALETTE[i];
+            }
 
             // Diagnostic state updater
             function updateStatus(type, title, detail) {
@@ -326,10 +307,10 @@
                         syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
                     }
 
-                    // If Sync is toggled ON, feed the live heading into Compass Reading automatically
+                    // If Sync is toggled ON, feed the live heading into TRx Heading automatically
                     if (isSyncActive) {
-                        compassInput.value = sensorHeadingVal.toFixed(1);
-                        updateAll('compassInput');
+                        trxInput.value = sensorHeadingVal.toFixed(1);
+                        updateAll('trxInput');
                     }
                 }
             }
@@ -373,84 +354,140 @@
                     syncSensorBtn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 ring-2 ring-emerald-400 cursor-pointer';
                     syncSensorBtn.querySelector('span').textContent = 'Syncing...';
                     if (sensorHeadingVal !== null) {
-                        compassInput.value = sensorHeadingVal.toFixed(1);
-                        updateAll('compassInput');
+                        trxInput.value = sensorHeadingVal.toFixed(1);
+                        updateAll('trxInput');
                     }
                 } else {
                     syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
-                    syncSensorBtn.querySelector('span').textContent = 'Sync Compass Reading';
+                    syncSensorBtn.querySelector('span').textContent = 'Sync TRx Heading';
                 }
             });
 
-            // Preset data for 45 degree increments (values are Compass Reading headings)
-            const northPresetsData = [
-                { angle: 0, label: 'N (North)' },
-                { angle: 45, label: 'NE (North-East)' },
-                { angle: 90, label: 'E (East)' },
-                { angle: 135, label: 'SE (South-East)' },
-                { angle: 180, label: 'S (South)' },
-                { angle: 225, label: 'SW (South-West)' },
-                { angle: 270, label: 'W (West)' },
-                { angle: 315, label: 'NW (North-West)' }
-            ];
+            // ---- Monitored Signals: add / remove / render ----
 
-            // Render 45-degree preset rows
-            function renderPresetsTable() {
-                if (!presetsTableBody) return;
-                presetsTableBody.innerHTML = '';
+            // Reads the "Compass at capture" field. "N/A" / "NA" (or blank) means the
+            // signal is linked to the live TRx Heading instead of a fixed capture value.
+            // Returns null for incomplete/invalid text so mid-typing keystrokes are ignored.
+            function parseCompassField(raw) {
+                const trimmed = (raw || '').trim();
+                const normalized = trimmed.toUpperCase().replace(/\//g, '');
+                if (normalized === 'NA' || normalized === '') {
+                    return { linked: true, value: null };
+                }
+                const num = parseFloat(trimmed);
+                if (!isNaN(num)) {
+                    return { linked: false, value: normalizeDeg(num) };
+                }
+                return null;
+            }
 
-                northPresetsData.forEach(p => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-slate-800/50 transition-colors preset-row';
-                    tr.dataset.angle = p.angle;
+            // compassVal omitted (or null) => signal defaults to linked (N/A).
+            function addSignal(aoaVal, compassVal) {
+                const label = 'M' + labelCounter;
+                labelCounter += 1;
+                const linked = (compassVal === undefined || compassVal === null);
+                signals.push({
+                    label,
+                    aoa: normalizeDeg(aoaVal || 0),
+                    linked,
+                    compass: linked ? null : normalizeDeg(compassVal),
+                    compassRaw: linked ? 'N/A' : String(normalizeDeg(compassVal))
+                });
+                renderSignalsList();
+                updateAll();
+            }
 
-                    tr.innerHTML = `
-                        <td class="px-3 py-2 font-mono font-semibold text-sky-400">${p.angle}°</td>
-                        <td class="px-3 py-2 text-slate-300">${p.label}</td>
-                        <td class="px-3 py-2 text-right">
-                            <button class="preset-apply-btn bg-slate-800 hover:bg-sky-600 text-slate-200 hover:text-white px-2.5 py-1 rounded-md text-[11px] font-medium border border-slate-700 transition"
-                                data-heading="${p.angle}">
-                                Select
-                            </button>
-                        </td>
+            function removeSignal(label) {
+                signals = signals.filter(s => s.label !== label);
+                renderSignalsList();
+                updateAll();
+            }
+
+            // Wipes and reseeds a single default monitored signal (used on startup and Reset).
+            function seedDefaultSignal() {
+                signals = [];
+                labelCounter = 1;
+                addSignal(120); // AoA=120°, Compass at capture defaults to N/A (linked)
+            }
+
+            function renderSignalsList() {
+                signalsListEl.innerHTML = '';
+
+                if (signals.length === 0) {
+                    signalsListEl.innerHTML = '<p class="text-xs text-slate-500 italic px-1 py-2">No signals yet. Click "+ Add Signal" to add one.</p>';
+                    return;
+                }
+
+                signals.forEach(sig => {
+                    const color = getSignalColor(sig.label);
+                    const row = document.createElement('div');
+                    row.className = 'bg-slate-900/60 border border-slate-700/70 rounded-xl p-3 space-y-2';
+                    row.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-2 text-sm font-bold" style="color:${color}">
+                                <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${color}"></span>
+                                ${sig.label}
+                            </span>
+                            <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                                <span>Live &ang;: <span class="font-mono text-slate-200" id="live-${sig.label}">--°</span></span>
+                                <button class="remove-signal-btn text-rose-400 hover:text-rose-300 font-semibold" data-label="${sig.label}">Remove</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="text-[10px] uppercase tracking-wider text-slate-400">Compass at capture (°)</label>
+                                    <span id="linkbadge-${sig.label}" class="text-[10px] text-cyan-300 font-semibold" style="display:${sig.linked ? '' : 'none'}">&#128279; linked</span>
+                                </div>
+                                <input type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 315 or N/A" value="${sig.compassRaw}"
+                                    class="signal-compass w-full bg-slate-950/80 border ${sig.linked ? 'border-cyan-500/70 text-cyan-300' : 'border-slate-700 text-sky-300'} rounded-lg px-2 py-1.5 text-right font-mono focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                                    data-label="${sig.label}">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase tracking-wider text-slate-400 block mb-1">AoA at capture (°)</label>
+                                <input type="number" min="0" max="360" step="0.1" value="${sig.aoa}" class="signal-aoa w-full bg-slate-950/80 border border-slate-700 rounded-lg px-2 py-1.5 text-right font-mono focus:outline-none focus:ring-2 transition" style="color:${color}" data-label="${sig.label}">
+                            </div>
+                        </div>
                     `;
-                    presetsTableBody.appendChild(tr);
+                    signalsListEl.appendChild(row);
                 });
 
-                document.querySelectorAll('.preset-apply-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        if (isSyncActive) {
-                            isSyncActive = false;
-                            syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
-                            syncSensorBtn.querySelector('span').textContent = 'Sync Compass Reading';
+                signalsListEl.querySelectorAll('.signal-compass').forEach(inp => {
+                    inp.addEventListener('input', (e) => {
+                        const sig = signals.find(s => s.label === e.target.dataset.label);
+                        if (!sig) return;
+                        sig.compassRaw = e.target.value;
+                        const parsed = parseCompassField(e.target.value);
+                        if (parsed) {
+                            sig.linked = parsed.linked;
+                            sig.compass = parsed.linked ? null : parsed.value;
+
+                            // Live visual feedback without a full re-render (keeps focus/cursor intact)
+                            const badge = document.getElementById('linkbadge-' + sig.label);
+                            if (badge) badge.style.display = parsed.linked ? '' : 'none';
+                            e.target.classList.toggle('border-cyan-500/70', parsed.linked);
+                            e.target.classList.toggle('text-cyan-300', parsed.linked);
+                            e.target.classList.toggle('border-slate-700', !parsed.linked);
+                            e.target.classList.toggle('text-sky-300', !parsed.linked);
                         }
-                        const angle = parseFloat(e.currentTarget.dataset.heading);
-                        compassInput.value = angle;
-                        updateAll('compassInput');
+                        updateAll();
                     });
                 });
-            }
-
-            function updateActivePresetHighlight(currentCompass) {
-                const rows = document.querySelectorAll('.preset-row');
-                rows.forEach(row => {
-                    const rowAngle = parseFloat(row.dataset.angle);
-                    const btn = row.querySelector('.preset-apply-btn');
-                    if (Math.abs(rowAngle - currentCompass) < 0.1) {
-                        row.classList.add('bg-sky-950/40', 'border-l-2', 'border-sky-400');
-                        if (btn) {
-                            btn.textContent = 'Active';
-                            btn.className = 'preset-apply-btn bg-sky-500 text-white px-2.5 py-1 rounded-md text-[11px] font-semibold transition';
-                        }
-                    } else {
-                        row.classList.remove('bg-sky-950/40', 'border-l-2', 'border-sky-400');
-                        if (btn) {
-                            btn.textContent = 'Select';
-                            btn.className = 'preset-apply-btn bg-slate-800 hover:bg-sky-600 text-slate-200 hover:text-white px-2.5 py-1 rounded-md text-[11px] font-medium border border-slate-700 transition';
-                        }
-                    }
+                signalsListEl.querySelectorAll('.signal-aoa').forEach(inp => {
+                    inp.addEventListener('input', (e) => {
+                        const sig = signals.find(s => s.label === e.target.dataset.label);
+                        if (sig) sig.aoa = parseFloat(e.target.value) || 0;
+                        updateAll();
+                    });
+                });
+                signalsListEl.querySelectorAll('.remove-signal-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => removeSignal(e.target.dataset.label));
                 });
             }
+
+            addSignalBtn.addEventListener('click', () => {
+                addSignal(90); // AoA default 90°, Compass at capture defaults to N/A (linked to TRx Heading)
+            });
 
             let dpr = window.devicePixelRatio || 1;
             let size = 0;
@@ -478,19 +515,27 @@
                 return n < 0 ? n + 360 : n;
             };
 
-            // Core conversion: Compass Reading is the heading the notch points to.
+            // Core conversion: TRx Heading is the heading the notch points to right now.
             // Northinfo is the clockwise rotation (from the notch) at which True North
             // must be drawn, i.e. the inverse of the notch's heading.
             const compassToNorthinfo = (compassDeg) => normalizeDeg(360 - normalizeDeg(compassDeg));
+
+            // A monitored signal's AoA was captured relative to the notch, at a past
+            // TRx Heading. Its true (absolute) bearing never changes; only the angle
+            // at which it is drawn relative to the *current* notch does.
+            // A "linked" signal (Compass at capture = N/A) has no fixed capture heading
+            // at all -- it always uses the live TRx Heading, so its displayed angle is
+            // simply its raw AoA, continuously re-read relative to the current notch.
+            const signalTrueBearing = (sig, currentTrx) => normalizeDeg((sig.linked ? currentTrx : sig.compass) + sig.aoa);
+            const signalDisplayAngle = (sig, currentTrx) => normalizeDeg(signalTrueBearing(sig, currentTrx) - currentTrx);
 
             function drawCompass() {
                 if (!ctx || size === 0) return;
 
                 ctx.clearRect(0, 0, size, size);
 
-                const compassVal = parseFloat(compassInput.value) || 0;
-                const northAngle = compassToNorthinfo(compassVal);
-                const aoaAngle = parseFloat(aoaInput.value) || 0;
+                const trxVal = parseFloat(trxInput.value) || 0;
+                const northAngle = compassToNorthinfo(trxVal);
 
                 // 1. Outer Housing
                 ctx.save();
@@ -509,8 +554,11 @@
                 // 3. Center Needle
                 drawCenterNeedle(northAngle);
 
-                // 4. AoA Line
-                drawAoALine(aoaAngle);
+                // 4. One arrow per monitored signal
+                signals.forEach(sig => {
+                    const displayAngle = signalDisplayAngle(sig, trxVal);
+                    drawSignalArrow(displayAngle, getSignalColor(sig.label), sig.label);
+                });
 
                 // 5. Fixed Notch at Top Pointing UPWARDS
                 drawFixedNotch();
@@ -628,35 +676,59 @@
                 ctx.restore();
             }
 
-            function drawAoALine(aoaDegrees) {
-                ctx.save();
-                ctx.translate(center, center);
-                ctx.rotate(aoaDegrees * (Math.PI / 180));
-
+            // Draws one signal's dashed bearing line + arrowhead + its label (M1, M2, ...)
+            // just past the tip. Computed in absolute (unrotated) coordinates so the
+            // label text itself is drawn upright, not rotated with the line.
+            function drawSignalArrow(angleDeg, color, label) {
+                const rad = degToRad(angleDeg);
                 const lineRadius = radius - 18;
                 const arrowHeadSize = 14;
 
+                const tipX = center + Math.cos(rad) * lineRadius;
+                const tipY = center + Math.sin(rad) * lineRadius;
+
+                ctx.save();
+
+                // Dashed line from center to tip
                 ctx.beginPath();
-                ctx.moveTo(0, -lineRadius);
-                ctx.lineTo(0, lineRadius);
-                ctx.strokeStyle = '#34d399';
+                ctx.moveTo(center, center);
+                ctx.lineTo(tipX, tipY);
+                ctx.strokeStyle = color;
                 ctx.lineWidth = 2.5;
                 ctx.setLineDash([6, 4]);
                 ctx.stroke();
-
                 ctx.setLineDash([]);
 
-                ctx.beginPath();
-                ctx.moveTo(0, -lineRadius - 2);
-                ctx.lineTo(-arrowHeadSize / 1.8, -lineRadius + arrowHeadSize);
-                ctx.lineTo(arrowHeadSize / 1.8, -lineRadius + arrowHeadSize);
-                ctx.closePath();
-                ctx.fillStyle = '#34d399';
-                ctx.fill();
+                // Arrowhead
+                const perpAngle = rad + Math.PI / 2;
+                const backX = center + Math.cos(rad) * (lineRadius - arrowHeadSize);
+                const backY = center + Math.sin(rad) * (lineRadius - arrowHeadSize);
+                const leftX = backX + Math.cos(perpAngle) * (arrowHeadSize / 1.8);
+                const leftY = backY + Math.sin(perpAngle) * (arrowHeadSize / 1.8);
+                const rightX = backX - Math.cos(perpAngle) * (arrowHeadSize / 1.8);
+                const rightY = backY - Math.sin(perpAngle) * (arrowHeadSize / 1.8);
 
-                ctx.shadowColor = '#34d399';
+                ctx.beginPath();
+                ctx.moveTo(tipX, tipY);
+                ctx.lineTo(leftX, leftY);
+                ctx.lineTo(rightX, rightY);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.shadowColor = color;
                 ctx.shadowBlur = 8;
-                ctx.stroke();
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Label at the end of the arrow, kept upright
+                const labelRadius = lineRadius + 13;
+                const lx = center + Math.cos(rad) * labelRadius;
+                const ly = center + Math.sin(rad) * labelRadius;
+                ctx.font = '700 13px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = color;
+                ctx.shadowBlur = 4;
+                ctx.fillText(label, lx, ly);
 
                 ctx.restore();
             }
@@ -686,74 +758,67 @@
             }
 
             function updateAll(source) {
-                let compassVal = parseFloat(compassInput.value);
-                let aoaVal = parseFloat(aoaInput.value);
+                let trxVal = parseFloat(trxInput.value);
 
-                if (source === 'compassInput') {
-                    compassSlider.value = normalizeDeg(compassVal);
-                } else if (source === 'compassSlider') {
-                    compassInput.value = compassSlider.value;
-                } else if (source === 'aoaInput') {
-                    aoaSlider.value = normalizeDeg(aoaVal);
-                } else if (source === 'aoaSlider') {
-                    aoaInput.value = aoaSlider.value;
+                if (source === 'trxInput') {
+                    trxSlider.value = normalizeDeg(trxVal);
+                } else if (source === 'trxSlider') {
+                    trxInput.value = trxSlider.value;
                 }
 
-                const finalCompass = normalizeDeg(parseFloat(compassInput.value) || 0);
-                const finalNorthinfo = compassToNorthinfo(finalCompass);
-                const finalAoA = normalizeDeg(parseFloat(aoaInput.value) || 0);
+                const finalTrx = normalizeDeg(parseFloat(trxInput.value) || 0);
+                const finalNorthinfo = compassToNorthinfo(finalTrx);
 
-                readoutCompass.textContent = finalCompass.toFixed(1) + '°';
+                readoutTrx.textContent = finalTrx.toFixed(1) + '°';
                 readoutNorth.textContent = finalNorthinfo.toFixed(1) + '°';
-                readoutAoA.textContent = finalAoA.toFixed(1) + '°';
+                readoutSignalCount.textContent = signals.length;
 
-                const relBearing = normalizeDeg(finalAoA - finalNorthinfo);
-                readoutRel.textContent = relBearing.toFixed(1) + '°';
+                signals.forEach(sig => {
+                    const liveEl = document.getElementById('live-' + sig.label);
+                    if (liveEl) {
+                        liveEl.textContent = signalDisplayAngle(sig, finalTrx).toFixed(1) + '°';
+                    }
+                });
 
-                updateActivePresetHighlight(finalCompass);
                 drawCompass();
             }
 
             // Input Listeners
-            compassInput.addEventListener('input', () => {
+            trxInput.addEventListener('input', () => {
                 if (isSyncActive) {
                     isSyncActive = false;
                     syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
-                    syncSensorBtn.querySelector('span').textContent = 'Sync Compass Reading';
+                    syncSensorBtn.querySelector('span').textContent = 'Sync TRx Heading';
                 }
-                updateAll('compassInput');
+                updateAll('trxInput');
             });
-            compassSlider.addEventListener('input', () => {
+            trxSlider.addEventListener('input', () => {
                 if (isSyncActive) {
                     isSyncActive = false;
                     syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
-                    syncSensorBtn.querySelector('span').textContent = 'Sync Compass Reading';
+                    syncSensorBtn.querySelector('span').textContent = 'Sync TRx Heading';
                 }
-                updateAll('compassSlider');
+                updateAll('trxSlider');
             });
-            aoaInput.addEventListener('input', () => updateAll('aoaInput'));
-            aoaSlider.addEventListener('input', () => updateAll('aoaSlider'));
 
             // Reset Button Handler
             resetBtn.addEventListener('click', () => {
                 if (isSyncActive) {
                     isSyncActive = false;
                     syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
-                    syncSensorBtn.querySelector('span').textContent = 'Sync Compass Reading';
+                    syncSensorBtn.querySelector('span').textContent = 'Sync TRx Heading';
                 }
-                compassInput.value = 315;
-                aoaInput.value = 120;
-                updateAll('compassInput');
-                updateAll('aoaInput');
+                trxInput.value = 315;
+                seedDefaultSignal();
+                updateAll('trxInput');
             });
 
             window.addEventListener('resize', resizeCanvas);
 
-            // Startup Init
-            renderPresetsTable();
+            // Startup Init: seed one default monitored signal
+            seedDefaultSignal();
             resizeCanvas();
-            updateAll('compassInput');
-            updateAll('aoaInput');
+            updateAll('trxInput');
         });
     </script>
 </body>
