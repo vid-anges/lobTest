@@ -62,6 +62,7 @@
                         <div>
                             <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Sensor Heading</span>
                             <span id="sensorHeading" class="text-xl font-bold font-mono text-sky-400">---°</span>
+                            <span id="sensorRefBadge" class="text-[9px] font-semibold block mt-0.5 text-slate-500">not connected</span>
                         </div>
                         <div class="border-l border-slate-800 pl-4">
                             <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Cardinal</span>
@@ -94,7 +95,7 @@
                 </svg>
                 <div class="space-y-1">
                     <p id="sensorStatusMsg" class="font-medium">Tap "Connect Sensor" to request orientation permissions on mobile devices.</p>
-                    <p id="sensorDetailMsg" class="text-[11px] text-slate-400">Note: Laptop and desktop computers do not have physical compass magnetometers built-in.</p>
+                    <p id="sensorDetailMsg" class="text-[11px] text-slate-400">Note: Laptop and desktop computers do not have physical compass magnetometers built-in. Also, this reads magnetic north like a physical compass -- a phone's own Compass app often shows true north instead, so the two can differ by your local magnetic declination even when both are working correctly.</p>
                 </div>
             </div>
         </section>
@@ -226,6 +227,7 @@
             const syncSensorBtn = document.getElementById('syncSensorBtn');
             const sensorHeadingEl = document.getElementById('sensorHeading');
             const sensorCardinalEl = document.getElementById('sensorCardinal');
+            const sensorRefBadge = document.getElementById('sensorRefBadge');
             const sensorBadge = document.getElementById('sensorBadge');
             const sensorStatusMsg = document.getElementById('sensorStatusMsg');
             const sensorDetailMsg = document.getElementById('sensorDetailMsg');
@@ -240,6 +242,11 @@
             let sensorHeadingVal = null;
             let isSyncActive = false;
             let sensorConnected = false;
+            // True once we've received a reading the browser/OS actually confirms is
+            // referenced to north (an absolute orientation event, or iOS's
+            // webkitCompassHeading, which is always magnetic-north-referenced).
+            let usingAbsoluteEvent = false;
+            let plainListenerAttached = false;
 
             // Monitored signals state: { label, compass, aoa }
             // labelCounter always increases -- labels are never reused, even after a delete.
@@ -279,39 +286,72 @@
 
             // Phone Sensor Event Handler
             function handleOrientation(e) {
-                let heading = null;
+                // Is *this* event actually confirmed to be referenced to north?
+                // - iOS webkitCompassHeading is always magnetic-north-referenced.
+                // - 'deviceorientationabsolute' events are north-referenced by definition.
+                // - a plain 'deviceorientation' event only counts if the browser itself
+                //   flags e.absolute === true; otherwise alpha may just be relative to
+                //   whatever direction the phone was facing when the page loaded.
+                const hasCompassHeading = e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null;
+                const isAbsoluteEvent = hasCompassHeading || e.type === 'deviceorientationabsolute' || e.absolute === true;
 
-                // iOS webkitCompassHeading vs standard alpha
-                if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
+                // Once we have a trustworthy absolute source, ignore lower-quality
+                // plain events so the two don't fight/jitter against each other.
+                if (usingAbsoluteEvent && !isAbsoluteEvent) return;
+
+                let heading = null;
+                if (hasCompassHeading) {
                     heading = e.webkitCompassHeading; // iOS heading
                 } else if (e.alpha !== null) {
                     heading = (360 - e.alpha) % 360; // Standard Android/W3C heading
                 }
 
-                if (heading !== null) {
-                    // This is the heading the device/notch is physically pointing to.
-                    sensorHeadingVal = (heading + 360) % 360;
+                if (heading === null) return;
 
-                    // Update sensor display card
-                    sensorHeadingEl.textContent = sensorHeadingVal.toFixed(1) + '°';
-                    sensorCardinalEl.textContent = getCardinal(sensorHeadingVal);
+                if (isAbsoluteEvent && !usingAbsoluteEvent) {
+                    usingAbsoluteEvent = true;
+                    // Drop the redundant fallback listener now that we have a real one.
+                    if (plainListenerAttached) {
+                        window.removeEventListener('deviceorientation', handleOrientation, true);
+                        plainListenerAttached = false;
+                    }
+                }
 
-                    if (!sensorConnected) {
-                        sensorConnected = true;
-                        sensorBadge.textContent = 'Live Hardware';
-                        sensorBadge.className = 'text-[10px] font-semibold bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-700';
-                        updateStatus('success', 'Phone sensor connected!', 'Receiving live orientation stream from your physical device.');
+                // This is the heading the device/notch is physically pointing to.
+                sensorHeadingVal = (heading + 360) % 360;
 
-                        // Enable Sync Button
-                        syncSensorBtn.disabled = false;
-                        syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
+                // Update sensor display card
+                sensorHeadingEl.textContent = sensorHeadingVal.toFixed(1) + '°';
+                sensorCardinalEl.textContent = getCardinal(sensorHeadingVal);
+
+                if (isAbsoluteEvent) {
+                    sensorRefBadge.textContent = 'north-referenced (magnetic)';
+                    sensorRefBadge.className = 'text-[9px] font-semibold block mt-0.5 text-emerald-400';
+                } else {
+                    sensorRefBadge.textContent = 'not confirmed north-referenced';
+                    sensorRefBadge.className = 'text-[9px] font-semibold block mt-0.5 text-amber-400';
+                }
+
+                if (!sensorConnected) {
+                    sensorConnected = true;
+                    sensorBadge.textContent = 'Live Hardware';
+                    sensorBadge.className = 'text-[10px] font-semibold bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-700';
+
+                    if (isAbsoluteEvent) {
+                        updateStatus('success', 'Phone sensor connected!', 'Receiving a north-referenced (magnetic) orientation stream. This can still differ from your phone\'s own Compass app if it shows true north (declination-corrected) instead of magnetic north.');
+                    } else {
+                        updateStatus('warning', 'Phone sensor connected, but not confirmed north-referenced.', 'Your browser isn\'t reporting this as an absolute/compass heading -- it may just track rotation from wherever the page was loaded. Try rotating the phone through a full turn, or use Chrome for Android, which supports absolute orientation.');
                     }
 
-                    // If Sync is toggled ON, feed the live heading into TRx Heading automatically
-                    if (isSyncActive) {
-                        trxInput.value = sensorHeadingVal.toFixed(1);
-                        updateAll('trxInput');
-                    }
+                    // Enable Sync Button
+                    syncSensorBtn.disabled = false;
+                    syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
+                }
+
+                // If Sync is toggled ON, feed the live heading into TRx Heading automatically
+                if (isSyncActive) {
+                    trxInput.value = sensorHeadingVal.toFixed(1);
+                    updateAll('trxInput');
                 }
             }
 
@@ -323,13 +363,19 @@
                     return;
                 }
 
+                usingAbsoluteEvent = false;
+                sensorRefBadge.textContent = 'connecting...';
+                sensorRefBadge.className = 'text-[9px] font-semibold block mt-0.5 text-slate-400';
+
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    // iOS 13+ Request Permission
+                    // iOS 13+ Request Permission. iOS always supplies webkitCompassHeading,
+                    // which is inherently magnetic-north-referenced (calibrated via the
+                    // system Compass app), so no fallback/absolute juggling is needed here.
                     DeviceOrientationEvent.requestPermission()
                         .then(response => {
                             if (response === 'granted') {
                                 window.addEventListener('deviceorientation', handleOrientation, true);
-                                updateStatus('warning', 'Permission granted! Waiting for orientation data...', 'Rotate your phone or wave it in a figure-8 motion.');
+                                updateStatus('warning', 'Permission granted! Waiting for orientation data...', 'Rotate your phone or wave it in a figure-8 motion. If readings seem off, calibrate via the system Compass app.');
                             } else {
                                 updateStatus('error', 'Permission denied!', 'iOS blocked sensor access. Enable "Motion & Orientation Access" under Settings > Safari.');
                             }
@@ -339,9 +385,16 @@
                             updateStatus('error', 'Permission request failed.', 'Check device settings or browser security context.');
                         });
                 } else if ('DeviceOrientationEvent' in window) {
-                    // Standard browsers (Android Chrome, etc.)
+                    // Standard browsers (Android Chrome, etc.). Prefer the absolute event
+                    // when the browser exposes it; always also attach the plain event as a
+                    // fallback in case 'ondeviceorientationabsolute' exists but never fires.
+                    // handleOrientation() drops the fallback once a real absolute event arrives.
+                    if ('ondeviceorientationabsolute' in window) {
+                        window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+                    }
                     window.addEventListener('deviceorientation', handleOrientation, true);
-                    updateStatus('warning', 'Listening for sensor events...', 'If readings stay at ---°, ensure you are using a physical smartphone with a magnetic sensor.');
+                    plainListenerAttached = true;
+                    updateStatus('warning', 'Listening for sensor events...', 'If the badge under Sensor Heading stays amber, the browser is not confirming a north-referenced heading -- rotate the phone through a full turn, or try Chrome for Android.');
                 } else {
                     updateStatus('error', 'DeviceOrientation API not supported.', 'Your device or browser does not expose magnetic orientation hardware.');
                 }
