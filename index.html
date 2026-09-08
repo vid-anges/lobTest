@@ -36,7 +36,7 @@
     </header>
 
     <main class="w-full max-w-5xl flex flex-col gap-6">
-        
+
         <!-- TOP CARD: Phone Compass Live Sensor -->
         <section class="w-full glass-panel p-5 rounded-3xl shadow-xl border border-sky-500/20">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -81,7 +81,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
-                            <span>Sync Northinfo</span>
+                            <span>Sync Compass Reading</span>
                         </button>
                     </div>
                 </div>
@@ -100,24 +100,28 @@
         </section>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            
+
             <!-- Canvas Visualizer Display -->
             <div class="lg:col-span-7 flex flex-col items-center justify-center">
                 <div class="glass-panel p-4 md:p-6 rounded-3xl shadow-2xl relative flex items-center justify-center w-full max-w-[500px] aspect-square">
                     <canvas id="compassCanvas" class="w-full h-full block rounded-full shadow-inner"></canvas>
                 </div>
-                
+
                 <!-- Dynamic Telemetry Readout -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full max-w-[500px] mt-4">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-[500px] mt-4">
                     <div class="glass-panel p-3 rounded-xl text-center">
-                        <span class="text-xs text-slate-400 font-medium block">North Offset</span>
+                        <span class="text-xs text-slate-400 font-medium block">Compass Reading</span>
+                        <span id="readoutCompass" class="text-lg font-bold text-cyan-300">315.0°</span>
+                    </div>
+                    <div class="glass-panel p-3 rounded-xl text-center">
+                        <span class="text-xs text-slate-400 font-medium block">Northinfo (computed)</span>
                         <span id="readoutNorth" class="text-lg font-bold text-sky-400">45.0°</span>
                     </div>
                     <div class="glass-panel p-3 rounded-xl text-center">
                         <span class="text-xs text-slate-400 font-medium block">AoA Angle</span>
                         <span id="readoutAoA" class="text-lg font-bold text-emerald-400">120.0°</span>
                     </div>
-                    <div class="glass-panel p-3 rounded-xl text-center col-span-2 sm:col-span-1">
+                    <div class="glass-panel p-3 rounded-xl text-center">
                         <span class="text-xs text-slate-400 font-medium block">Rel. Bearing</span>
                         <span id="readoutRel" class="text-lg font-bold text-amber-400">75.0°</span>
                     </div>
@@ -126,7 +130,7 @@
 
             <!-- Controls Side Panel -->
             <div class="lg:col-span-5 flex flex-col gap-6">
-                
+
                 <!-- Input Form Panel -->
                 <div class="glass-panel p-6 rounded-3xl shadow-xl space-y-6">
                     <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
@@ -136,22 +140,22 @@
                         </button>
                     </div>
 
-                    <!-- Northinfo Input Group -->
+                    <!-- Compass Reading Input Group -->
                     <div class="space-y-2">
                         <div class="flex justify-between items-center">
-                            <label for="Northinfo" class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                                <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
-                                Northinfo (°)
+                            <label for="CompassReading" class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span>
+                                Compass Reading (°)
                             </label>
-                            <span class="text-xs text-slate-400">Fixed Notch Relative</span>
+                            <span class="text-xs text-slate-400">Notch Heading</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <input type="number" id="Northinfo" min="0" max="360" step="0.1" value="45"
-                                class="w-28 bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-right font-mono text-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
-                            <input type="range" id="NorthinfoSlider" min="0" max="360" step="0.5" value="45"
+                            <input type="number" id="CompassReading" min="0" max="360" step="0.1" value="315"
+                                class="w-28 bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-right font-mono text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
+                            <input type="range" id="CompassReadingSlider" min="0" max="360" step="0.5" value="315"
                                 class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
                         </div>
-                        <p class="text-xs text-slate-400">Rotates cardinal ring clockwise and aligns North needle from top notch.</p>
+                        <p class="text-xs text-slate-400">Heading the fixed notch is currently pointing to (0° = notch points true North). Northinfo, the ring/needle rotation, is computed as 360° − Compass Reading.</p>
                     </div>
 
                     <!-- AoA Input Group -->
@@ -172,10 +176,10 @@
                         <p class="text-xs text-slate-400">Sets bearing arrow angle measured clockwise from the top notch.</p>
                     </div>
 
-                    <!-- Northinfo 45-Degree Presets Table -->
+                    <!-- Compass Reading 45-Degree Presets Table -->
                     <div class="pt-2 border-t border-slate-700/60">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Northinfo Presets (45° Steps)</span>
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Compass Reading Presets (45° Steps)</span>
                         </div>
                         <div class="overflow-x-auto rounded-xl border border-slate-700/80 bg-slate-900/50 max-h-48 scrollbar-thin">
                             <table class="w-full text-left text-xs text-slate-300">
@@ -205,11 +209,11 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 border-2 border-amber-400 bg-amber-400/20 rounded-sm"></div>
-                        <span><strong>Fixed Notch (Top):</strong> Fixed 12 o'clock reference marker (0° reference) pointing UPWARDS.</span>
+                        <span><strong>Fixed Notch (Top):</strong> Fixed 12 o'clock reference marker (0° reference) pointing UPWARDS. This is where the Compass Reading is measured from.</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 bg-red-500 rounded-sm"></div>
-                        <span><strong>Red Needle:</strong> Points towards North at Northinfo angle.</span>
+                        <span><strong>Red Needle:</strong> Points towards true North, at the computed Northinfo angle.</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 bg-slate-400 rounded-sm"></div>
@@ -234,14 +238,15 @@
             // Canvas Elements
             const canvas = document.getElementById('compassCanvas');
             const ctx = canvas ? canvas.getContext('2d') : null;
-            
+
             // Input Elements
-            const northInput = document.getElementById('Northinfo');
-            const northSlider = document.getElementById('NorthinfoSlider');
+            const compassInput = document.getElementById('CompassReading');
+            const compassSlider = document.getElementById('CompassReadingSlider');
             const aoaInput = document.getElementById('AoA');
             const aoaSlider = document.getElementById('AoASlider');
-            
+
             // Readout Elements
+            const readoutCompass = document.getElementById('readoutCompass');
             const readoutNorth = document.getElementById('readoutNorth');
             const readoutAoA = document.getElementById('readoutAoA');
             const readoutRel = document.getElementById('readoutRel');
@@ -303,8 +308,9 @@
                 }
 
                 if (heading !== null) {
+                    // This is the heading the device/notch is physically pointing to.
                     sensorHeadingVal = (heading + 360) % 360;
-                    
+
                     // Update sensor display card
                     sensorHeadingEl.textContent = sensorHeadingVal.toFixed(1) + '°';
                     sensorCardinalEl.textContent = getCardinal(sensorHeadingVal);
@@ -314,16 +320,16 @@
                         sensorBadge.textContent = 'Live Hardware';
                         sensorBadge.className = 'text-[10px] font-semibold bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-700';
                         updateStatus('success', 'Phone sensor connected!', 'Receiving live orientation stream from your physical device.');
-                        
+
                         // Enable Sync Button
                         syncSensorBtn.disabled = false;
                         syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
                     }
 
-                    // If Sync Northinfo is toggled ON, update Northinfo input automatically
+                    // If Sync is toggled ON, feed the live heading into Compass Reading automatically
                     if (isSyncActive) {
-                        northInput.value = sensorHeadingVal.toFixed(1);
-                        updateAll('northInput');
+                        compassInput.value = sensorHeadingVal.toFixed(1);
+                        updateAll('compassInput');
                     }
                 }
             }
@@ -367,16 +373,16 @@
                     syncSensorBtn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 ring-2 ring-emerald-400 cursor-pointer';
                     syncSensorBtn.querySelector('span').textContent = 'Syncing...';
                     if (sensorHeadingVal !== null) {
-                        northInput.value = sensorHeadingVal.toFixed(1);
-                        updateAll('northInput');
+                        compassInput.value = sensorHeadingVal.toFixed(1);
+                        updateAll('compassInput');
                     }
                 } else {
                     syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
-                    syncSensorBtn.querySelector('span').textContent = 'Sync Northinfo';
+                    syncSensorBtn.querySelector('span').textContent = 'Sync Compass Reading';
                 }
             });
 
-            // Preset data for 45 degree increments
+            // Preset data for 45 degree increments (values are Compass Reading headings)
             const northPresetsData = [
                 { angle: 0, label: 'N (North)' },
                 { angle: 45, label: 'NE (North-East)' },
@@ -392,18 +398,18 @@
             function renderPresetsTable() {
                 if (!presetsTableBody) return;
                 presetsTableBody.innerHTML = '';
-                
+
                 northPresetsData.forEach(p => {
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-800/50 transition-colors preset-row';
                     tr.dataset.angle = p.angle;
-                    
+
                     tr.innerHTML = `
                         <td class="px-3 py-2 font-mono font-semibold text-sky-400">${p.angle}°</td>
                         <td class="px-3 py-2 text-slate-300">${p.label}</td>
                         <td class="px-3 py-2 text-right">
                             <button class="preset-apply-btn bg-slate-800 hover:bg-sky-600 text-slate-200 hover:text-white px-2.5 py-1 rounded-md text-[11px] font-medium border border-slate-700 transition"
-                                data-north="${p.angle}">
+                                data-heading="${p.angle}">
                                 Select
                             </button>
                         </td>
@@ -416,21 +422,21 @@
                         if (isSyncActive) {
                             isSyncActive = false;
                             syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
-                            syncSensorBtn.querySelector('span').textContent = 'Sync Northinfo';
+                            syncSensorBtn.querySelector('span').textContent = 'Sync Compass Reading';
                         }
-                        const angle = parseFloat(e.currentTarget.dataset.north);
-                        northInput.value = angle;
-                        updateAll('northInput');
+                        const angle = parseFloat(e.currentTarget.dataset.heading);
+                        compassInput.value = angle;
+                        updateAll('compassInput');
                     });
                 });
             }
 
-            function updateActivePresetHighlight(currentNorth) {
+            function updateActivePresetHighlight(currentCompass) {
                 const rows = document.querySelectorAll('.preset-row');
                 rows.forEach(row => {
                     const rowAngle = parseFloat(row.dataset.angle);
                     const btn = row.querySelector('.preset-apply-btn');
-                    if (Math.abs(rowAngle - currentNorth) < 0.1) {
+                    if (Math.abs(rowAngle - currentCompass) < 0.1) {
                         row.classList.add('bg-sky-950/40', 'border-l-2', 'border-sky-400');
                         if (btn) {
                             btn.textContent = 'Active';
@@ -455,14 +461,14 @@
                 const rect = canvas.getBoundingClientRect();
                 size = rect.width || 300;
                 dpr = window.devicePixelRatio || 1;
-                
+
                 canvas.width = size * dpr;
                 canvas.height = size * dpr;
-                
+
                 ctx.scale(dpr, dpr);
                 center = size / 2;
                 radius = (size / 2) - 18;
-                
+
                 drawCompass();
             }
 
@@ -472,12 +478,18 @@
                 return n < 0 ? n + 360 : n;
             };
 
+            // Core conversion: Compass Reading is the heading the notch points to.
+            // Northinfo is the clockwise rotation (from the notch) at which True North
+            // must be drawn, i.e. the inverse of the notch's heading.
+            const compassToNorthinfo = (compassDeg) => normalizeDeg(360 - normalizeDeg(compassDeg));
+
             function drawCompass() {
                 if (!ctx || size === 0) return;
 
                 ctx.clearRect(0, 0, size, size);
 
-                const northAngle = parseFloat(northInput.value) || 0;
+                const compassVal = parseFloat(compassInput.value) || 0;
+                const northAngle = compassToNorthinfo(compassVal);
                 const aoaAngle = parseFloat(aoaInput.value) || 0;
 
                 // 1. Outer Housing
@@ -674,48 +686,50 @@
             }
 
             function updateAll(source) {
-                let northVal = parseFloat(northInput.value);
+                let compassVal = parseFloat(compassInput.value);
                 let aoaVal = parseFloat(aoaInput.value);
 
-                if (source === 'northInput') {
-                    northSlider.value = normalizeDeg(northVal);
-                } else if (source === 'northSlider') {
-                    northInput.value = northSlider.value;
+                if (source === 'compassInput') {
+                    compassSlider.value = normalizeDeg(compassVal);
+                } else if (source === 'compassSlider') {
+                    compassInput.value = compassSlider.value;
                 } else if (source === 'aoaInput') {
                     aoaSlider.value = normalizeDeg(aoaVal);
                 } else if (source === 'aoaSlider') {
                     aoaInput.value = aoaSlider.value;
                 }
 
-                const finalNorth = normalizeDeg(parseFloat(northInput.value) || 0);
+                const finalCompass = normalizeDeg(parseFloat(compassInput.value) || 0);
+                const finalNorthinfo = compassToNorthinfo(finalCompass);
                 const finalAoA = normalizeDeg(parseFloat(aoaInput.value) || 0);
 
-                readoutNorth.textContent = finalNorth.toFixed(1) + '°';
+                readoutCompass.textContent = finalCompass.toFixed(1) + '°';
+                readoutNorth.textContent = finalNorthinfo.toFixed(1) + '°';
                 readoutAoA.textContent = finalAoA.toFixed(1) + '°';
 
-                const relBearing = normalizeDeg(finalAoA - finalNorth);
+                const relBearing = normalizeDeg(finalAoA - finalNorthinfo);
                 readoutRel.textContent = relBearing.toFixed(1) + '°';
 
-                updateActivePresetHighlight(finalNorth);
+                updateActivePresetHighlight(finalCompass);
                 drawCompass();
             }
 
             // Input Listeners
-            northInput.addEventListener('input', () => {
+            compassInput.addEventListener('input', () => {
                 if (isSyncActive) {
                     isSyncActive = false;
                     syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
-                    syncSensorBtn.querySelector('span').textContent = 'Sync Northinfo';
+                    syncSensorBtn.querySelector('span').textContent = 'Sync Compass Reading';
                 }
-                updateAll('northInput');
+                updateAll('compassInput');
             });
-            northSlider.addEventListener('input', () => {
+            compassSlider.addEventListener('input', () => {
                 if (isSyncActive) {
                     isSyncActive = false;
                     syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
-                    syncSensorBtn.querySelector('span').textContent = 'Sync Northinfo';
+                    syncSensorBtn.querySelector('span').textContent = 'Sync Compass Reading';
                 }
-                updateAll('northSlider');
+                updateAll('compassSlider');
             });
             aoaInput.addEventListener('input', () => updateAll('aoaInput'));
             aoaSlider.addEventListener('input', () => updateAll('aoaSlider'));
@@ -725,11 +739,11 @@
                 if (isSyncActive) {
                     isSyncActive = false;
                     syncSensorBtn.className = 'bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer';
-                    syncSensorBtn.querySelector('span').textContent = 'Sync Northinfo';
+                    syncSensorBtn.querySelector('span').textContent = 'Sync Compass Reading';
                 }
-                northInput.value = 45;
+                compassInput.value = 315;
                 aoaInput.value = 120;
-                updateAll('northInput');
+                updateAll('compassInput');
                 updateAll('aoaInput');
             });
 
@@ -738,7 +752,7 @@
             // Startup Init
             renderPresetsTable();
             resizeCanvas();
-            updateAll('northInput');
+            updateAll('compassInput');
             updateAll('aoaInput');
         });
     </script>
