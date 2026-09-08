@@ -284,6 +284,23 @@
                 return points[idx];
             }
 
+            // 'alpha' is defined relative to the physical device chassis, NOT the
+            // currently displayed screen orientation. If the phone has auto-rotated
+            // into landscape (or is held rotated relative to what the browser assumes),
+            // this shows up as a clean 90/180/270 degree offset versus a native compass
+            // app, which does compensate for this. iOS's webkitCompassHeading already
+            // accounts for interface orientation, so this is only needed for the
+            // alpha-based (Android/standard) path.
+            function getScreenAngle() {
+                if (screen.orientation && typeof screen.orientation.angle === 'number') {
+                    return screen.orientation.angle;
+                }
+                if (typeof window.orientation === 'number') {
+                    return window.orientation; // deprecated fallback for older browsers
+                }
+                return 0;
+            }
+
             // Phone Sensor Event Handler
             function handleOrientation(e) {
                 // Is *this* event actually confirmed to be referenced to north?
@@ -301,9 +318,12 @@
 
                 let heading = null;
                 if (hasCompassHeading) {
-                    heading = e.webkitCompassHeading; // iOS heading
+                    heading = e.webkitCompassHeading; // iOS heading -- already interface-orientation-compensated
                 } else if (e.alpha !== null) {
-                    heading = (360 - e.alpha) % 360; // Standard Android/W3C heading
+                    // Compensate for the phone's current screen rotation (see getScreenAngle
+                    // above) -- without this, a rotated/landscape screen causes a clean
+                    // 90/180/270 degree offset versus the phone's native compass app.
+                    heading = (360 - e.alpha + getScreenAngle()) % 360;
                 }
 
                 if (heading === null) return;
@@ -337,10 +357,11 @@
                     sensorBadge.textContent = 'Live Hardware';
                     sensorBadge.className = 'text-[10px] font-semibold bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-700';
 
+                    const screenAngleNote = hasCompassHeading ? '' : ` (screen angle: ${getScreenAngle()}°, auto-compensated)`;
                     if (isAbsoluteEvent) {
-                        updateStatus('success', 'Phone sensor connected!', 'Receiving a north-referenced (magnetic) orientation stream. This can still differ from your phone\'s own Compass app if it shows true north (declination-corrected) instead of magnetic north.');
+                        updateStatus('success', 'Phone sensor connected!', 'Receiving a north-referenced (magnetic) orientation stream' + screenAngleNote + '. This can still differ from your phone\'s own Compass app if it shows true north (declination-corrected) instead of magnetic north.');
                     } else {
-                        updateStatus('warning', 'Phone sensor connected, but not confirmed north-referenced.', 'Your browser isn\'t reporting this as an absolute/compass heading -- it may just track rotation from wherever the page was loaded. Try rotating the phone through a full turn, or use Chrome for Android, which supports absolute orientation.');
+                        updateStatus('warning', 'Phone sensor connected, but not confirmed north-referenced.', 'Your browser isn\'t reporting this as an absolute/compass heading' + screenAngleNote + ' -- it may just track rotation from wherever the page was loaded. Try rotating the phone through a full turn, or use Chrome for Android, which supports absolute orientation.');
                     }
 
                     // Enable Sync Button
